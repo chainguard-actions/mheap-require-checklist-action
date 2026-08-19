@@ -1,0 +1,31 @@
+name: Test requireChecklist=true fails when no checklist present
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with requireChecklist=true
+        id: action
+        uses: .
+        with:
+          token: ${{ github.token }}
+          requireChecklist: 'true'
+          skipComments: 'false'
+        continue-on-error: true
+
+      - name: Assert action fails when checklist is required but none found
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # When requireChecklist=true and there is no PR/issue body with a checklist,
+          # the action should fail (no checklist found = requirement not met).
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action correctly failed when checklist was required but not found"
+          else
+            echo "FAIL: expected failure when requireChecklist=true and no checklist present, got: $OUTCOME"
+            exit 1
+          fi
