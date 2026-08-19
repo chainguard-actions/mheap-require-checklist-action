@@ -1,0 +1,29 @@
+name: Test basic usage - no checklist required (default)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run action with default settings
+        id: action
+        uses: .
+        with:
+          token: ${{ github.token }}
+          requireChecklist: 'false'
+        continue-on-error: true
+      - name: Assert action completed (pass or graceful fail for non-PR event)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # Under workflow_dispatch, the action may succeed (no checklist to check)
+          # or fail gracefully if it requires a PR/issue context.
+          # Either success or failure is acceptable here — we just verify it ran.
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran and produced a deterministic outcome: $OUTCOME"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi

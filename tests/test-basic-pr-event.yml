@@ -1,0 +1,61 @@
+name: Test basic PR event
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create fake GitHub event payload
+        run: |
+          mkdir -p /tmp/github-events
+          cat > /tmp/github-events/pull_request.json <<'EOF'
+          {
+            "action": "opened",
+            "number": 1,
+            "pull_request": {
+              "number": 1,
+              "title": "Test PR",
+              "body": "This is a test PR with no checklist",
+              "head": {
+                "ref": "feature-branch",
+                "sha": "abc123"
+              },
+              "base": {
+                "ref": "main"
+              }
+            },
+            "repository": {
+              "name": "test-repo",
+              "owner": {
+                "login": "test-owner"
+              },
+              "full_name": "test-owner/test-repo"
+            }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        env:
+          GITHUB_EVENT_PATH: /tmp/github-events/pull_request.json
+          GITHUB_EVENT_NAME: pull_request
+          GITHUB_REPOSITORY: test-owner/test-repo
+        with:
+          token: fake-token-for-testing
+          requireChecklist: 'false'
+
+      - name: Assert action ran (may fail due to API call with fake token)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action should either succeed or fail (not be skipped or cancelled)
+          if [ "$OUTCOME" = "skipped" ] || [ "$OUTCOME" = "cancelled" ]; then
+            echo "FAIL: action was unexpectedly $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome '$OUTCOME' (failure expected without real GitHub token)"

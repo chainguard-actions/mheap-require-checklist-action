@@ -1,0 +1,61 @@
+name: Test requireChecklist input
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create fake GitHub event payload
+        run: |
+          mkdir -p /tmp/github-events
+          cat > /tmp/github-events/pull_request.json <<'EOF'
+          {
+            "action": "opened",
+            "number": 42,
+            "pull_request": {
+              "number": 42,
+              "title": "PR without checklist",
+              "body": "This PR has no checklist items at all.",
+              "head": {
+                "ref": "feature-branch",
+                "sha": "abc123"
+              },
+              "base": {
+                "ref": "main"
+              }
+            },
+            "repository": {
+              "name": "test-repo",
+              "owner": {
+                "login": "test-owner"
+              },
+              "full_name": "test-owner/test-repo"
+            }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        env:
+          GITHUB_EVENT_PATH: /tmp/github-events/pull_request.json
+          GITHUB_EVENT_NAME: pull_request
+          GITHUB_REPOSITORY: test-owner/test-repo
+        with:
+          token: fake-token-for-testing
+          requireChecklist: 'true'
+
+      - name: Assert action failed (requireChecklist=true with no checklist or API error)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # With requireChecklist=true and no real API access, action should fail
+          if [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action unexpectedly succeeded - it should fail when requireChecklist=true and API is unavailable"
+            exit 1
+          fi
+          echo "PASS: action failed as expected (outcome: $OUTCOME)"

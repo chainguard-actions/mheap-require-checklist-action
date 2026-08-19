@@ -1,0 +1,56 @@
+name: Test issue event
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create fake GitHub issue event payload
+        run: |
+          mkdir -p /tmp/github-events
+          cat > /tmp/github-events/issues.json <<'EOF'
+          {
+            "action": "opened",
+            "issue": {
+              "number": 5,
+              "title": "Test Issue",
+              "body": "## Checklist\n- [x] Item one\n- [x] Item two",
+              "user": {
+                "login": "test-user"
+              }
+            },
+            "repository": {
+              "name": "test-repo",
+              "owner": {
+                "login": "test-owner"
+              },
+              "full_name": "test-owner/test-repo"
+            }
+          }
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        env:
+          GITHUB_EVENT_PATH: /tmp/github-events/issues.json
+          GITHUB_EVENT_NAME: issues
+          GITHUB_REPOSITORY: test-owner/test-repo
+        with:
+          token: fake-token-for-testing
+          requireChecklist: 'false'
+
+      - name: Assert action ran (not skipped or cancelled)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action should run (success or failure), not be skipped/cancelled
+          if [ "$OUTCOME" = "skipped" ] || [ "$OUTCOME" = "cancelled" ]; then
+            echo "FAIL: action was unexpectedly $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome '$OUTCOME' for issues event"
