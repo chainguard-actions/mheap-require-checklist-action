@@ -6,10 +6,10 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v2.4.0 | [`v2.4.0`](https://github.com/chainguard-actions/mheap-require-checklist-action/tree/v2.4.0) | [`efef3b1`](https://github.com/mheap/require-checklist-action/commit/efef3b1b39d03d12be5ce427c15064f287ba5843) |
-| v2.5.0 | [`v2.5.0`](https://github.com/chainguard-actions/mheap-require-checklist-action/tree/v2.5.0) | [`46d2ca1`](https://github.com/mheap/require-checklist-action/commit/46d2ca1a0f90144bd081fd13a80b1dc581759365) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v2.4.0 | [`v2.4.0`](https://github.com/chainguard-actions/mheap-require-checklist-action/tree/v2.4.0) | [`efef3b1`](https://github.com/mheap/require-checklist-action/commit/efef3b1b39d03d12be5ce427c15064f287ba5843) | [`HARDENING.md`](https://github.com/chainguard-actions/mheap-require-checklist-action/blob/v2.4.0/HARDENING.md) |
+| v2.5.0 | [`v2.5.0`](https://github.com/chainguard-actions/mheap-require-checklist-action/tree/v2.5.0) | [`46d2ca1`](https://github.com/mheap/require-checklist-action/commit/46d2ca1a0f90144bd081fd13a80b1dc581759365) | [`HARDENING.md`](https://github.com/chainguard-actions/mheap-require-checklist-action/blob/v2.5.0/HARDENING.md) |
 
 ## Privacy
 
